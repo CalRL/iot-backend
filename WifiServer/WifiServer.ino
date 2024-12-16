@@ -58,11 +58,11 @@ void processData(String receivedData) {
   if(receivedData == "STATE1") {
     if(state == 0) {
       digitalWrite(pin, HIGH);
-      Serial.println(pin + " set to HIGH: " + receivedData);
+      Serial.println(String(pin) + " set to HIGH: " + receivedData);
       state = 1;
     } else if (state == 1) {
       digitalWrite(pin, LOW);
-      Serial.println(pin + " set to LOW: " + receivedData);
+      Serial.println(String(pin) + " set to LOW: " + receivedData);
       state = 0;
     }
     return;
