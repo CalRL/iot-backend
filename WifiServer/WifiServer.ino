@@ -1,12 +1,11 @@
 #include <WiFiS3.h>
 
-// Access Point credentials
 const char* ssid = "ArduinoR4-AP";
 const char* password = "password123";
 
 int pin = 7;
+int state = 0;
 
-// Create a server on port 80
 WiFiServer server(80);
 
 void setup() {
@@ -39,22 +38,7 @@ void loop() {
     while (client.connected()) {
       if (client.available()) {
         String receivedData = client.readStringUntil('\n');
-        String toSend = "";
-        Serial.print("Received: ");
-        Serial.println(receivedData);
-
-        receivedData.trim();
-
-       if(receivedData == "SET HIGH") {
-        digitalWrite(pin, HIGH);
-        Serial.println("SET HIGH");
-       } else if (receivedData == "SET HIGH") {
-        digitalWrite(pin, LOW);
-        Serial.println("SET LOW");
-       }
-       toSend = receivedData;
-        // Echo back to the client
-        client.println("Echo: " + toSend);
+        processData(receivedData);
 
         while(client.available()) {
           client.read();
@@ -65,5 +49,22 @@ void loop() {
     // Close the connection
     client.stop();
     Serial.println("Client disconnected");
+  }
+}
+
+void processData(String receivedData) {
+  Serial.println(receivedData);
+  receivedData.trim();
+  if(receivedData == "STATE1") {
+    if(state == 0) {
+      digitalWrite(pin, HIGH);
+      Serial.println(pin + " set to HIGH: " + receivedData);
+      state = 1;
+    } else if (state == 1) {
+      digitalWrite(pin, LOW);
+      Serial.println(pin + " set to LOW: " + receivedData);
+      state = 0;
+    }
+    return;
   }
 }
