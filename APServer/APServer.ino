@@ -60,13 +60,13 @@ void processData(WiFiClient client, String receivedData) {
   if(receivedData == "STATE1") {
     if(state == 0) {
       digitalWrite(pin, HIGH);
-      toSend = String(pin) + " set to HIGH: " + receivedData;
+      toSend = "Pin:" + String(pin) + " set to HIGH: " + receivedData;
       Serial.println(toSend);
       state = 1;
-      client.println("POST " + toSend);
+      client.println(toSend);
     } else if (state == 1) {
       digitalWrite(pin, LOW);
-      toSend = String(pin) + " set to LOW: " + receivedData;
+      toSend = "Pin:" + String(pin) + " set to LOW: " + receivedData;
       Serial.println(toSend);
       state = 0;
       client.println(toSend);
