@@ -5,7 +5,7 @@ const char* ssid = "staline";
 const char* password = "mdptemporaire1";
 
 // Flask server details
-const char* serverIP = "172.20.10.7";  // Replace with your Flask server's IP
+const char* serverIP = "172.20.10.3";  // Replace with your Flask server's IP
 const int serverPort = 5000;           // Replace with your Flask server's port
 
 const int pin = 7;
@@ -14,6 +14,7 @@ int state = 0;
 WiFiClient client;
 WiFiServer server(5001);
 int status = WL_IDLE_STATUS;
+bool isProcessing = false;
 
 void setup() {
   Serial.begin(115200);
@@ -44,6 +45,16 @@ void loop() {
   if (incomingClient) {
     Serial.println("New client connected.");
 
+    // If the client is already processing a request, this will stop it
+    if (isProcessing) {
+        Serial.println("Already processing a request. Ignoring new client.");
+        incomingClient.stop();
+        return;
+    }
+
+    isProcessing = true;
+
+
     // Keep the connection open as long as the client is connected
     while (incomingClient.connected()) {
       // Check if data is available from the client
@@ -70,6 +81,7 @@ void loop() {
     }
 
     Serial.println("Client disconnected.");
+    isProcessing = false;
   }
 }
 
@@ -78,23 +90,34 @@ void processData(WiFiClient& client, String receivedData) {
   Serial.println("Received data: " + receivedData);
   receivedData.trim();  // Remove any extra whitespace or newline characters
   String toSend;
+  String message;
+  String timer;
 
-  if (receivedData == "STATE1") {
+  int delimiterIndex = receivedData.indexOf(':');
+  if (delimiterIndex != -1) {
+    timer = receivedData.substring(0, delimiterIndex);
+    message = receivedData.substring(delimiterIndex + 1);
+  }
+
+  if (message == "FLIPSTATE") {
     // Toggle pin state and prepare the response message
     if (state == 0) {
       digitalWrite(pin, HIGH);
-      toSend = "Pin " + String(pin) + " set to HIGH";
-      Serial.println(toSend);
+      toSend = String(timer) + ":Pin " + String(pin) + " set to HIGH";
       state = 1;
     } else if (state == 1) {
       digitalWrite(pin, LOW);
-      toSend = "Pin " + String(pin) + " set to LOW";
-      Serial.println(toSend);
+      toSend = String(timer) + ":Pin " + String(pin) + " set to LOW";
       state = 0;
     }
 
     // Send the response to the Flask server using a properly formatted HTTP POST request
 
+  } else if (message == "GETSTATE") {
+    int pin = 7;
+    int state = digitalRead(pin);
+    String word = processWord(state);
+    toSend = String(timer) + ":Pin " + String(pin) + "'s STATE is currently: " + word;
   } else {
     Serial.println("Unknown command received: " + receivedData);
   }
@@ -102,9 +125,14 @@ void processData(WiFiClient& client, String receivedData) {
   Serial.println("Response sent to client: " + toSend);
 }
 
+
 // Function to send a properly formatted HTTP POST request
 void sendHttpPost(String message) {
     // Attempt to connect to the server if not already connected
+    if(message == " " || message == "" || message == NULL) {
+      Serial.print(String(message) + "< Blank message?");
+    }
+
     if (!client.connected()) {
         Serial.println("Attempting to connect to the server...");
         if (!client.connect(serverIP, serverPort)) {
@@ -113,7 +141,6 @@ void sendHttpPost(String message) {
         }
         Serial.println("Connected to server.");
     }
-
     // Build the HTTP POST request
     String httpRequest = "POST / HTTP/1.1\r\n";
     httpRequest += "Host: " + String(serverIP) + "\r\n";
@@ -125,18 +152,23 @@ void sendHttpPost(String message) {
     // Send the request
     client.print(httpRequest);
     Serial.println("HTTP POST sent:");
-    Serial.println(httpRequest);
+    //Serial.println(httpRequest);
 
     // Wait for and print the server response
     Serial.println("Awaiting server response...");
     while (client.connected() || client.available()) {
         if (client.available()) {
             String response = client.readStringUntil('\n');
-            Serial.println("Server response: " + response);
-        }
+            //Serial.println("Server response: " + response);
+          }
     }
 
     // Close the connection
     client.stop();
     Serial.println("Connection closed.");
+}
+
+// Return HIGH or LOW depending on state
+String processWord(int state) {
+  return (state == 1)? "HIGH" : "LOW";
 }
