@@ -5,7 +5,7 @@ const char* ssid = "staline";
 const char* password = "mdptemporaire1";
 
 // Flask server details
-const char* serverIP = "172.20.10.3";  // Replace with your Flask server's IP
+const char* serverIP = "172.20.10.7";  // Replace with your Flask server's IP
 const int serverPort = 5000;           // Replace with your Flask server's port
 
 const int pin = 7;
@@ -35,7 +35,7 @@ void setup() {
   Serial.println(WiFi.localIP());
 
   server.begin();
-  Serial.println("Server started...");
+  Serial.println("Server started on port 5001...");
 }
 
 void loop() {
