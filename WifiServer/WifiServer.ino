@@ -14,7 +14,10 @@ int state = 0;
 WiFiClient client;
 WiFiServer server(5001);
 int status = WL_IDLE_STATUS;
-bool isProcessing = false;
+
+unsigned long lastRequestTime = 0;
+// RATE LIMIT
+const unsigned long requestInterval = 1000;
 
 void setup() {
   Serial.begin(115200);
@@ -40,20 +43,18 @@ void setup() {
 }
 
 void loop() {
+
+  unsigned long currentTime = millis();
+  if (currentTime - lastRequestTime < requestInterval) {
+    return; // Skip processing if within the interval
+  }
+  
   // Check if a new client is connected
   WiFiClient incomingClient = server.available();
+  incomingClient.setTimeout(1000);
   if (incomingClient) {
+    lastRequestTime = currentTime;
     Serial.println("New client connected.");
-
-    // If the client is already processing a request, this will stop it
-    if (isProcessing) {
-        Serial.println("Already processing a request. Ignoring new client.");
-        incomingClient.stop();
-        return;
-    }
-
-    isProcessing = true;
-
 
     // Keep the connection open as long as the client is connected
     while (incomingClient.connected()) {
@@ -81,7 +82,6 @@ void loop() {
     }
 
     Serial.println("Client disconnected.");
-    isProcessing = false;
   }
 }
 
@@ -119,7 +119,7 @@ void processData(WiFiClient& client, String receivedData) {
     String word = processWord(state);
     toSend = String(timer) + ":Pin " + String(pin) + "'s STATE is currently: " + word;
   } else {
-    Serial.println("Unknown command received: " + receivedData);
+    Serial.println("Unknown command received: " + message);
   }
   sendHttpPost(toSend);
   Serial.println("Response sent to client: " + toSend);
