@@ -5,7 +5,7 @@ const char* ssid = "staline";
 const char* password = "mdptemporaire1";
 
 // Flask server details
-const char* serverIP = "172.20.10.3";  // Replace with your Flask server's IP
+const char* serverIP = "172.20.10.7";  // Replace with your Flask server's IP
 const int serverPort = 5000;           // Replace with your Flask server's port
 
 const int pin = 7;
@@ -101,11 +101,11 @@ void processData(WiFiClient& client, String receivedData) {
     // Toggle pin state and prepare the response message
     if (state == 0) {
       digitalWrite(pin, HIGH);
-      toSend = String(timer) + ":Pin " + String(pin) + " set to HIGH";
+      toSend = String(timer) + ":Pin " + String(pin) + " set to HIGH (Relay OFF, Light OFF)";
       state = 1;
     } else if (state == 1) {
       digitalWrite(pin, LOW);
-      toSend = String(timer) + ":Pin " + String(pin) + " set to LOW";
+      toSend = String(timer) + ":Pin " + String(pin) + " set to LOW (Relay ON, Light ON)";
       state = 0;
     }
 
