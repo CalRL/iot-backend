@@ -28,8 +28,6 @@ void setup() {
   while (status != WL_CONNECTED) {
     Serial.println(ssid);
     status = WiFi.begin(ssid, password);
-
-    delay(500);
     Serial.print(".");
     Serial.println(WiFi.RSSI());
   }
@@ -121,9 +119,11 @@ void processData(WiFiClient& client, String receivedData) {
   } else {
     Serial.println("Unknown command received: " + message);
   }
+
   sendHttpPost(toSend);
   Serial.println("Response sent to client: " + toSend);
 }
+
 
 
 // Function to send a properly formatted HTTP POST request
