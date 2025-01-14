@@ -24,7 +24,7 @@ void setup() {
   delay(1000);
 
   pinMode(pin, OUTPUT);
-  Serial.println("Attempting to connect to WPA SSID: ");
+  Serial.println("Attempting to connect to WPA SSID: "); 
   while (status != WL_CONNECTED) {
     Serial.println(ssid);
     status = WiFi.begin(ssid, password);
