@@ -4,9 +4,9 @@
 const char* ssid = "staline";
 const char* password = "mdptemporaire1";
 
-// Flask server details
-const char* serverIP = "172.20.10.7";  // Replace with your Flask server's IP
-const int serverPort = 5000;           // Replace with your Flask server's port
+// Server details
+const char* serverIP = "172.20.10.5";  // Replace with your ip
+const int serverPort = 5000;           // Replace with your port
 
 const int pin = 7;
 int state = 0;
